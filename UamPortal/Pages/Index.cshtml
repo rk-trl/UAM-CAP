@@ -1,0 +1,31 @@
+﻿@page
+@model IndexModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h5>Total Users</h5>
+        <p class="stat-number">@Model.TotalUsers</p>
+    </div>
+    <div class="card">
+        <h5>Internal Users</h5>
+        <p class="stat-number">@Model.InternalUsers</p>
+    </div>
+    <div class="card">
+        <h5>External Users</h5>
+        <p class="stat-number">@Model.ExternalUsers</p>
+    </div>
+    <div class="card">
+        <h5>Pending Invitations</h5>
+        <p class="stat-number">@Model.PendingInvitations</p>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <h4>Welcome, @User.Identity.Name</h4>
+    <p>This portal is protected by SSO authentication.</p>
+</div>

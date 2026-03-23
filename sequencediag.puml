@@ -1,0 +1,122 @@
+@startuml
+
+actor "Internal Admin" as Admin
+participant "User Management Portal" as UMP
+participant "Microsoft Entra ID" as Entra
+participant "Application API" as API
+database "Application SQL DB" as DB
+participant "Email Service" as Email
+actor "External User" as User
+participant "Client Portal" as Portal
+participant "Azure AD B2C" as B2C
+
+
+== INTERNAL USER LOGIN ==
+
+Admin -> UMP : Access User Management Portal
+UMP -> Entra : Redirect for SSO Authentication
+Entra -> Admin : Login + MFA
+Entra -> UMP : ID Token + Access Token
+UMP -> UMP : Validate token & roles
+
+UMP -> Admin : Admin Dashboard
+
+
+== CREATE EXTERNAL USER INVITATION ==
+
+Admin -> UMP : Create External User\n(Name, Email, Role)
+
+UMP -> API : POST /external-users
+API -> DB : Save user record\nStatus = INVITED
+
+API -> API : Generate InvitationToken
+
+API -> DB : Update record\nInvitationToken
+
+API -> Email : Send Invitation Email\nRegistration Link
+
+Email -> User : Email with link\n/register?token=ABC123
+
+
+== USER OPENS INVITATION LINK ==
+
+User -> Portal : Open registration link
+
+Portal -> API : Validate invitation token
+
+API -> DB : Find invitation by token
+
+DB -> API : Return user record
+
+API -> Portal : Token valid\nReturn invited email
+
+
+== REDIRECT TO ADB2C SIGNUP ==
+
+Portal -> Portal : Generate OAuth state\nstate = InvitationToken
+
+Portal -> B2C : Redirect to Signup\nstate=ABC123
+
+
+== USER REGISTRATION IN ADB2C ==
+
+User -> B2C : Enter email & password
+
+B2C -> B2C : Create Identity
+
+B2C -> Portal : Return ID Token\nstate=ABC123
+
+
+== VALIDATE REGISTRATION ==
+
+Portal -> Portal : Extract state (token)
+
+Portal -> API : POST /complete-registration\n(Token + ID Token)
+
+API -> API : Decode ID Token
+
+API -> DB : Lookup invitation token
+
+DB -> API : Return invited email
+
+
+alt Email matches invited email
+
+API -> DB : Update user record\nStatus = ACTIVE\nSave B2C ObjectId
+
+API -> Portal : Registration successful
+
+Portal -> User : Redirect to Client Dashboard
+
+
+else Email mismatch
+
+API -> Portal : Registration rejected
+
+Portal -> User : Error\n"Email does not match invitation"
+
+end
+
+
+== LOGIN FLOW AFTER REGISTRATION ==
+
+User -> Portal : Access Client Portal
+
+Portal -> B2C : Redirect to Login
+
+User -> B2C : Enter credentials
+
+B2C -> Portal : Return ID Token
+
+Portal -> API : Validate user
+
+API -> DB : Lookup by B2C ObjectId
+
+DB -> API : Return user profile
+
+API -> Portal : User authorized
+
+Portal -> User : Dashboard Access
+
+
+@enduml

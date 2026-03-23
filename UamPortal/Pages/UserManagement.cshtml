@@ -1,0 +1,224 @@
+@page
+@model UserManagementModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="user-management">
+    <div class="management-header">
+        <h1 class="page-title">Manage Users</h1>
+        <div class="tab-toolbar">
+            <button class="btn btn-outline-primary active" id="tabInternal" type="button">Internal Users</button>
+            <button class="btn btn-outline-primary" id="tabExternal" type="button">External Users</button>
+        </div>
+        <div class="button-toolbar">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
+            <button class="btn btn-secondary" id="addExternalUserButton">Add External User</button>
+        </div>
+    </div>
+
+    <div id="internalUsersTab" class="tab-content active">
+        <div class="users-grid-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>User Type</th>
+                        <th>Object ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.InternalUsers != null && Model.InternalUsers.Count > 0)
+                    {
+                        @foreach (var u in Model.InternalUsers)
+                        {
+                            <tr>
+                                <td>@u.Mail</td>
+                                <td>@u.DisplayName</td>
+                                <td>@u.UserType</td>
+                                <td>@u.Id</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted" style="padding: 30px;">
+                                <i class="bi bi-inbox" style="font-size: 28px;"></i>
+                                <p style="margin-top: 10px;">No internal users found.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="externalUsersTab" class="tab-content">
+        <div class="users-grid-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Name</th>
+                        <th>User Type</th>
+                        <th>Object ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ExternalUsers != null && Model.ExternalUsers.Count > 0)
+                    {
+                        @foreach (var u in Model.ExternalUsers)
+                        {
+                            <tr>
+                                <td>@u.Mail</td>
+                                <td>@u.DisplayName</td>
+                                <td>@u.UserType</td>
+                                <td>@u.Id</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center text-muted" style="padding: 30px;">
+                                <i class="bi bi-inbox" style="font-size: 28px;"></i>
+                                <p style="margin-top: 10px;">No external users found.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.InvitationUrl))
+    {
+        <div class="alert alert-success mt-4">
+            <strong><i class="bi bi-check-circle"></i> Success!</strong>
+            <p class="mt-2">Invitation link created successfully:</p>
+            <div class="invitation-link">
+                <input type="text" class="form-control" value="@Model.InvitationUrl" readonly>
+                <button class="btn btn-primary" onclick="copyToClipboard('@Model.InvitationUrl')">
+                    <i class="bi bi-clipboard"></i> Copy
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email <span style="color: #d32f2f;">*</span></label>
+                                <input type="email" class="form-control" name="Email" placeholder="user@company.com" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Role <span style="color: #d32f2f;">*</span></label>
+                                <select class="form-control" name="Role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="Reviewer">Reviewer</option>
+                                    <option value="Approver">Approver</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Application(s) <span style="color: #d32f2f;">*</span></label>
+                        <select class="form-control" name="Application" multiple required>
+                            <option value="Olympus">Olympus</option>
+                            <option value="Nova">Nova</option>
+                            <option value="Kingfisher">Kingfisher</option>
+                        </select>
+                        <small class="form-text text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-control" name="Status">
+                            <option value="Active" selected>Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .user-management { display: flex; flex-direction: column; gap: 20px; }
+    .management-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .page-title { font-size: 24px; font-weight: 600; }
+    .tab-toolbar { display: flex; gap: 8px; }
+    .button-toolbar { display: flex; gap: 8px; }
+    .users-grid-container { background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,.05); overflow: hidden; }
+    .table { margin-bottom: 0; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .invitation-link { display: flex; gap: 10px; margin-top: 10px; }
+
+    @@media (max-width: 768px) {
+        .management-header { flex-direction: column; align-items: flex-start; }
+        .button-toolbar { width: 100%; justify-content: flex-start; }
+    }
+</style>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => alert('Invitation URL copied.'));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabInternal = document.getElementById('tabInternal');
+        const tabExternal = document.getElementById('tabExternal');
+        const internalTab = document.getElementById('internalUsersTab');
+        const externalTab = document.getElementById('externalUsersTab');
+
+        function setTab(active) {
+            if (active === 'internal') {
+                internalTab.classList.add('active');
+                externalTab.classList.remove('active');
+                tabInternal.classList.add('active');
+                tabExternal.classList.remove('active');
+            } else {
+                internalTab.classList.remove('active');
+                externalTab.classList.add('active');
+                tabInternal.classList.remove('active');
+                tabExternal.classList.add('active');
+            }
+        }
+
+        tabInternal.addEventListener('click', () => setTab('internal'));
+        tabExternal.addEventListener('click', () => setTab('external'));
+
+        document.getElementById('addExternalUserButton').addEventListener('click', function () {
+            setTab('external');
+            var addModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+            addModal.show();
+        });
+
+        setTab('internal');
+    });
+</script>

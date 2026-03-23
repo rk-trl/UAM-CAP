@@ -1,0 +1,24 @@
+﻿
+USE OlympusIdentityPOC;
+GO
+
+CREATE TABLE Users (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    Email NVARCHAR(200) NOT NULL,
+    DisplayName NVARCHAR(200),
+    Role NVARCHAR(50),
+    Status NVARCHAR(50),
+    AzureObjectId NVARCHAR(200),
+    CreatedDate DATETIME
+);
+GO
+
+CREATE TABLE Invitations (
+    Id UNIQUEIDENTIFIER PRIMARY KEY,
+    Email NVARCHAR(200) NOT NULL,
+    Token NVARCHAR(200) NOT NULL,
+    Status NVARCHAR(50),
+    ExpiryDate DATETIME,
+    CreatedDate DATETIME
+);
+GO

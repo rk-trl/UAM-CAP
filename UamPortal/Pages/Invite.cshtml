@@ -1,0 +1,31 @@
+@page
+@model InviteModel
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@{
+    ViewData["Title"] = "Invite User";
+}
+
+<h2>Invite New User</h2>
+<form method="post">
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="Email" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Display Name</label>
+        <input type="text" name="DisplayName" class="form-control" required />
+    </div>
+    <div class="form-group">
+        <label>Role</label>
+        <input type="text" name="Role" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Invitation Link</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.InvitationUrl))
+{
+    <div class="alert alert-success mt-3">
+        <strong>Invitation Link:</strong> <a href="@Model.InvitationUrl" target="_blank">@Model.InvitationUrl</a>
+    </div>
+}
